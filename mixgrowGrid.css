@@ -1,0 +1,94 @@
+
+
+table.mixgrowGrid_data td{
+    padding:5px;
+    border:1px solid black;
+}
+
+.mixgrowGrid_header {
+    position:relative;
+    background-color: salmon;
+    opacity: .9;
+    display:none;
+}
+
+
+table.mixgrowGrid_header >  td {
+    border:1px solid black;
+}
+
+.mixgrowGrid_header .sortHolder{
+    width:19px;
+    height:19px;
+    background-image:url("sort_both.png");
+    cursor: pointer;
+}
+
+.mixgrowGrid_header .asc .sortHolder {
+    background-image:url("sort_asc.png");
+}
+.mixgrowGrid_header .desc .sortHolder {
+    background-image:url("sort_desc.png");
+}
+
+.mixgrowGrid_header .filterHolder {
+    width:16px;
+    height:16px;
+    background-image:url("filter_off.png");
+    cursor: pointer;
+}
+.mixgrowGrid_header .on .filterHolder {
+    background-image:url("filter_red.png");
+}
+
+.mixgrowGrid {
+    position:relative;
+}
+
+
+.mixgrowGrid_showingMessage {
+    position:relative;
+    margin-left:60px;
+    background-color: white;
+    opacity:.9;
+    padding:4px;
+    display:none;
+
+    font-weight: bold;
+    color:black;
+    border: 1px solid black;
+
+}
+
+.mixgrowGrid_showingMessage.isUnder{
+    border-bottom-left-radius:10px;
+    border-bottom-right-radius:10px;
+}
+.mixgrowGrid_showingMessage.isOver{
+    border-top-left-radius:10px;
+    border-top-right-radius:10px;
+}
+
+.mixgrowGrid_showingMessage span {
+
+}
+
+
+tr.mixgrow_parent {
+    background-color:#dddddd;
+}
+
+.mixGrowGrid.fadeTo50 {
+    opacity:.5;
+}
+
+.mixgrowGrid .editbox {
+    z-index: 100;
+    position:absolute;
+    left:30px;
+    top:30px;
+    background-color: darkgray;
+
+    display:none;
+    padding:8px;
+}
