@@ -10,7 +10,6 @@ see [this blog entry](http://kirkdev.blogspot.com/2014/04/cheap-infinite-scroll-
 
 Here is a sample setup.
 
-`
                     var intRenderer = ValueRenderer.numberRenderer(0);
                     var percentRenderer = ValueRenderer.percentRenderer(2);
                     var currencyRenderer = ValueRenderer.currencyRenderer("$");
@@ -126,7 +125,3 @@ Here is a sample setup.
 
 
                 });
-
-
-
-`
