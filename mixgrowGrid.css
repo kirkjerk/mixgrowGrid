@@ -1,21 +1,24 @@
 
 
-table.mixgrowGrid_data td{
-    padding:5px;
-    border:1px solid black;
-}
+
 
 .mixgrowGrid_header {
     position:relative;
-    background-color: salmon;
-    opacity: .9;
+    opacity: .95;
     display:none;
 }
 
+.mixgrowGrid_header tr.columnHeader {
+    background-color: white;
 
-table.mixgrowGrid_header >  td {
-    border:1px solid black;
 }
+
+.mixgrowGrid_header tr.columnHeader > td {
+    border-right:1px solid #cccccc;
+}
+
+
+
 
 .mixgrowGrid_header .sortHolder{
     width:19px;
@@ -41,9 +44,28 @@ table.mixgrowGrid_header >  td {
     background-image:url("filter_red.png");
 }
 
+.mixgrowGrid_header tr.tally {
+    background-color:#ddddff;
+}
+.mixgrowGrid_header .tally td {
+    padding:4px;
+}
+
 .mixgrowGrid {
     position:relative;
 }
+
+table.mixgrowGrid_data{
+    border:1px solid #cccccc;
+    min-width:1000px;
+}
+table.mixgrowGrid_data tr{
+    border-bottom:1px solid #cccccc;
+}
+table.mixgrowGrid_data td{
+    padding:4px;
+}
+
 
 
 .mixgrowGrid_showingMessage {
@@ -57,7 +79,6 @@ table.mixgrowGrid_header >  td {
     font-weight: bold;
     color:black;
     border: 1px solid black;
-
 }
 
 .mixgrowGrid_showingMessage.isUnder{
@@ -69,14 +90,12 @@ table.mixgrowGrid_header >  td {
     border-top-right-radius:10px;
 }
 
-.mixgrowGrid_showingMessage span {
-
-}
-
 
 tr.mixgrow_parent {
-    background-color:#dddddd;
+    background-color:#eeeeee;
 }
+
+
 
 .mixGrowGrid.fadeTo50 {
     opacity:.5;
@@ -91,4 +110,39 @@ tr.mixgrow_parent {
 
     display:none;
     padding:8px;
+}
+.mixgrowGrid_loading{
+    font-size:30px;
+    font-weight:bold;
+    background-image: url("ajax-loader.gif");
+    background-repeat: no-repeat;
+    padding-top:6px;
+    padding-left:60px;
+    height:60px;
+}
+
+.minWidth50{
+    min-width:50px;
+}
+.minWidth75{
+    min-width:75px;
+}
+.minWidth100{
+    min-width:100px;
+}
+.finalInSection{
+    border-right:1px solid #cccccc;
+}
+
+.mixgrowGrid .scrollToTop{
+    border:1px solid black;
+    border-radius:10px;
+    width:150px;
+    margin-left:20px;
+    text-align: center;
+}
+
+.mixgrowGrid .bottomborder{
+    background-color:white;
+    border-bottom:1px solid #cccccc;
 }

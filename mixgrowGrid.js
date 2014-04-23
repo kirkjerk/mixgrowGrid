@@ -2,12 +2,11 @@
 /*
 TODO:
 
-* filter
 * checkbox select
+* get dropdowns from queries, not just grabbing data
+* insert header into top
+* get header columns from queries / callback?
 
-* min width for cols???
-* custom classes for
-* write it up
 DONE:
  * basic dataload
  * load with hierarchy
@@ -19,9 +18,13 @@ DONE:
  * -tally place
  * -call back w/ different record types
  * sort
- *
+ ** filter
+ * * write it up
  * GENERAL ISSUES:
  * are we building the selects based on what's ever been there, or what?
+ * min width for cols???
+ * custom classes for cols
+ * header decoration
  */
 
 var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "this." will be public
@@ -82,6 +85,8 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
 
         buildHeader();
 
+        if(init.afterHeaderBuiltCallback != undefined) init.afterHeaderBuiltCallback();
+
 
         jqoDataTable = jQuery("<table class='mixgrowGrid_data'></table>");
         jqoWrapper.append(jqoDataTable);
@@ -98,7 +103,7 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
 
         if(init.selectorForLoadingIndicator) jqoLoadingIndicator = jQuery(init.selectorForLoadingIndicator)
         else {
-            jqoLoadingIndicator = jQuery("<div>Loading...</div>");
+            jqoLoadingIndicator = jQuery("<div class='mixgrowGrid_loading'>Loading...</div>");
             jqoSpot.append(jqoLoadingIndicator);
         }
 
@@ -176,43 +181,30 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
 
     var loadNextDataSet = function(removeOldData){
         jqoLoadingIndicator.show();
-        jQuery.getJSON(buildQuery(),function(data){receiveData(removeOldData,data);});
-    }
 
-
-    var buildQuery = function(){
-        var url = init.url;
-        url += "?offset="+currentOffset +"&count="+ init.recordsPerLoad;
+        var currentSortMap = {};
 
         if(currentSortField != undefined){
-            url += "&sortField="+currentSortField+"&sortOrder="+currentSortOrder;
+            currentSortMap[currentSortField] = currentSortOrder
         }
 
-        url += buildQueryGetFilters("&");
+        log("CALLING DATA");
+        init.dataLoader(
+            function(data){receiveData(removeOldData,data);},
+                currentOffset,currentFilters,currentSortMap
+        );
 
-        return url;
+
     }
-
-    var buildQueryGetFilters = function(sep){
-        var buf = "";
-
-        for(var filter in currentFilters){
-            buf += sep+filter+"="+currentFilters[filter];
-            sep = "&";
-        }
-        return buf;
-    }
-
 
 
     var receiveData = function(removeOldData, data){
-
         if(removeOldData){
             jqoDataTable.empty();
         }
         jqoWrapper.removeClass("fadeTo50");
 
-        jqoLoadingIndicator.show();
+        jqoLoadingIndicator.hide();
         currentOffset += data.length;
         //assume that receiving an array of length 0 means we have downloaded everything
         if(data.length == 0) noMoreToLoad = true;
@@ -245,13 +237,17 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
     
     
     var loadTallyRow = function(){
-        if(init.tallyurl != undefined) jQuery.getJSON(init.tallyurl + buildQueryGetFilters("?"),receiveTallyData);
+
+        if(init.tallyLoader != undefined) init.tallyLoader(receiveTallyData,currentFilters);
     }
 
     var receiveTallyData = function(data){
         var rowType = init.hierarchy[0]; //for now we are assuming tally row is same col desc as topmost row in hierarchy
         var colDetails = init.columns[rowType];
-
+log("TALLY ROW "+data);
+        for(var k in data){
+         log(k +"::"+data[k]);
+        }
         jqoHeaderTable.find(".tally").remove(); //remove all the old tally rows
         buildAndAppendRow(jqoHeaderTable,colDetails,data,"tally",false);
         adjustHeaderWidths();
@@ -293,7 +289,6 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
             var value = rowdata[fieldName]; //lookup value
 
             if(isTopLevel && thisCol.filter == "select"){
-                log("something for "+thisCol.data);
                 addValueToMapOfSets(uniqueValuesForKeys,thisCol.data,value);
             }
 
@@ -303,14 +298,30 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
                 value = thisCol.render(value);
             }
 
-            if(value == undefined) {
-                //err("no "+fieldName+" for type "+ rowType);
-                value = "";
-            }
+
             var jqoCol = jQuery("<td></td>");
-            jqoCol.html(value);
+
+            if(thisCol.special != undefined){
+                if(thisCol.special == "selection"){
+                    var jqoCheck = jQuery("<input type='checkbox'>");
+                    jqoCheck.data("rowdata",rowdata);
+                    jqoCol.html(jqoCheck);
+                }
+
+            } else {
+
+                if(value == undefined) {
+                    //err("no "+fieldName+" for type "+ rowType);
+                    value = "";
+                }
+                jqoCol.html(value);
+            }
+
+
 
             if(thisCol.colspan != undefined) jqoCol.attr("colspan",thisCol.colspan);
+
+            if(thisCol.class != undefined) jqoCol.addClass(thisCol.class);
 
             jqoRow.append(jqoCol);
         }
@@ -326,11 +337,20 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
     var buildHeader = function(){
         var rowType = init.hierarchy[0]; //this is hardcoded assuming top level
         var colDetails = init.columns[rowType];
-        buildHeaderRow(colDetails);
+
+        if(init.decorativeHeader && init.decorativeHeader.location == "top"){
+            addDecorativeHeader();
+        }
+
+        buildHeaderRow(colDetails, "columnHeader");
+        if(init.decorativeHeader && init.decorativeHeader.location != "top"){
+            addDecorativeHeader();
+        }
 
     }
-    var buildHeaderRow = function(colDetails){
+    var buildHeaderRow = function(colDetails, classForRow){
         var jqoRow = jQuery("<tr></tr>");
+        if(classForRow != undefined) jqoRow.addClass(classForRow);
         for(var i = 0; i < colDetails.length; i++){
             var thisCol = colDetails[i];
             var caption = thisCol.headerLabel;
@@ -383,6 +403,21 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
         jqoHeaderTable.append(jqoRow);
 
     }
+    var addDecorativeHeader = function(){
+        var columns = init.decorativeHeader.columns;
+        var jqoRow = jQuery("<tr></tr>");
+
+        for(var i = 0; i < columns.length;i++){
+            var col = columns[i];
+            var jqoCol = jQuery("<td></td>");
+            if(col.colspan != undefined) jqoCol.attr("colspan",col.colspan);
+            if(col.id != undefined) jqoCol.attr("id",col.id);
+            if(col["class"] != undefined) jqoCol.addClass(col["class"]);
+            if(col.caption != undefined) jqoCol.html(col.caption);
+            jqoRow.append(jqoCol);
+        }
+        jqoHeaderTable.append(jqoRow);
+    }
 
     var handleSortClick = function(){
         var jqo = jQuery(this);
@@ -425,6 +460,7 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
 
         if(filterType == "text"){
             jqoEditbox.append("<input class='input' />");
+            jqoEditbox.find("input").focus();
         }
         if(filterType == "select"){
             var select = jQuery("<select class='input'></select>");
@@ -482,7 +518,7 @@ var  mixgrowGrid = new function(){ //in this pattern, "var"s are private, and "t
         var jqoTableRow = jQuery(jqoTableRows[0]);
         var jqoTableCols = jqoTableRow.find("td");
 
-        var jqoHeaderCols = jqoHeaderTable.find("tr").children();
+        var jqoHeaderCols = jqoHeaderTable.find(".columnHeader").children();
 
         for(var i = 0; i < jqoTableCols.length; i++){
             var jqoTableCol = jQuery(jqoTableCols[i]);
